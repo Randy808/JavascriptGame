@@ -11,7 +11,7 @@ enemyArray[i] = new Enemy(i);
 }//----------------------------------------------
 
 var direction = 1;
-
+var spacing=0;
 var h=400;
 var v=400;
 var speed = 2;
@@ -31,6 +31,7 @@ function drawEnemy() {
       enemyArray[i].display();
 
     }
+    //spacing=0;
   //  counter+=5;
 }*/
 
@@ -48,7 +49,7 @@ vertex(h+50,v+50);
 endShape(CLOSE);
 
 
-for(i=0;i<5;i++){
+for(i=0;i<10;i++){
     enemyArray[i].display();
     enemyArray[i].move();
   }
@@ -99,6 +100,7 @@ this.speed = .5;
 var radi = 100;
 
 this.display = function(){//--------
+
 //y+=random(speed*direction);
     //meteory+=random(speed*direction);
 this.y+=random(speed*direction);
@@ -106,7 +108,8 @@ this.y+=random(speed*direction);
     if(this.y>height-radi||this.y<0){
       direction=-direction;
     }
-  ellipse(this.x, this.y, radi, radi);
+  ellipse(this.x+radi+spacing, this.y, radi, radi);
+spacing++;
 }//--------------------------------
 this.move = function(){
   //this.x = this.x + random(-1,1);
