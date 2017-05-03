@@ -1,12 +1,13 @@
 //================================================
 function setup() {
 createCanvas(800,600);
-x = 0;
-y = 0;
+var x = 0;
+var y = 0;
 
-for(i=0;i<5;i++){
+for(i=0;i<30;i++){
 enemyArray[i] = new Enemy(i);
 }
+
 }//----------------------------------------------
 
 var direction = 1;
@@ -19,11 +20,27 @@ var meteory = v;
 var shotFired = false;
 var bullets = [];
 var enemyArray=[];
+var i=0;
+var counter = 0;
+
+
+/*
+function drawEnemy() {
+
+  for(i=counter;i<5;i++){
+      enemyArray[i].display();
+
+    }
+  //  counter+=5;
+}*/
+
+
+
 
 //---------------------------------------------------
 function draw() {
 
-  background(204);
+background(204);
 beginShape();
 vertex(h,v);
 vertex(h-50,v+50);
@@ -31,17 +48,18 @@ vertex(h+50,v+50);
 endShape(CLOSE);
 
 
-for(i=0;i<enemyArray.length;i++){
-enemyArray[i].move();
-enemyArray[i].display();
-}
+for(i=0;i<5;i++){
+    enemyArray[i].display();
+    enemyArray[i].move();
+  }
 
-
-
+//var m = setInterval(drawEnemy, 2000);
+//y = y+5;
 if(shotFired){
   bullets.push([h,v,0,-1]);
   shotFired = false;
 }
+
 
 for(var i = 0 ; i < bullets.length; i++){
   ellipse(bullets[i][0],bullets[i][1],10,10);
@@ -73,8 +91,8 @@ if(keyIsPressed){
 //
 function Enemy(id){
   this.id = id;
-  this.x= random(0,width);
-  this.y= random(0,height);
+  this.x= random(25,width-25);
+this.y = random(0);
 this.hit = false;
 this.type= "enemy";
 this.speed = .5;
@@ -83,16 +101,16 @@ var radi = 100;
 this.display = function(){//--------
 //y+=random(speed*direction);
     //meteory+=random(speed*direction);
-//y+=random(speed*direction);
+this.y+=random(speed*direction);
 
-    if(y>height-radi||y<0){
+    if(this.y>height-radi||this.y<0){
       direction=-direction;
     }
-  ellipse(this.x+(120), this.y, radi, radi);
+  ellipse(this.x, this.y, radi, radi);
 }//--------------------------------
 this.move = function(){
-  this.x = this.x + random(-1,1);
-  this.y = this.y+ random(-1,1);
+  //this.x = this.x + random(-1,1);
+  this.y = this.y+5;
 }//------------------------------
 this.clear=function(){
   this.x=0;
@@ -101,6 +119,8 @@ this.clear=function(){
   radi=0;
 
 }
+
+
 
 
 
