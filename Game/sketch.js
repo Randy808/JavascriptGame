@@ -7,6 +7,17 @@ class Bullet{
     this.x_acc = x_acc;
     this.y_acc = y_acc;
   }
+  getDist(bullet2){
+  	return sqrt(pow(bullet2.x,2) + pow(bullet2.y,2));
+  }
+  update(){
+	this.x -= this.hspeed;
+	this.y += this.vspeed;
+	this.vspeed -= this.y_acc;
+  }
+  draw(){
+  	ellipse(this.x,this.y,10,10);
+  }
 }
 
 class Player{
@@ -69,6 +80,7 @@ var movingUp = false;
 var movingDown = false;
 
 var bullets = [];
+var bullets2 = [];
 var enemyArray=[];
 var i=0;
 var counter = 0;
@@ -106,7 +118,9 @@ for(i=0;i<10;i++){
   //var m = setInterval(drawEnemy, 2000);
   //y = y+5;
   if(shotFired){
-    bullets.push(new Bullet(player1.h,player1.v,0,-8,0,.4));
+  	var y_acc= random();
+  	console.log(y_acc);
+    bullets.push(new Bullet(player1.h,player1.v,0,-8,0,5*y_acc));
     shotFired = false;
   }
   if(movingLeft){
@@ -123,25 +137,37 @@ for(i=0;i<10;i++){
   }
 
 
-for(var i = 0 ; i < bullets.length; i++){
-  ellipse(bullets[i].x,bullets[i].y,10,10);
-
-  var hspeed = bullets[i].hspeed;
-  var vspeed = bullets[i].vspeed;
-  var y_acc = bullets[i].y_acc;
-
-  bullets[i].x -= hspeed;
-  bullets[i].y += vspeed;
-
-  bullets[i].vspeed += y_acc;
-  
-
+for(var i = 0 ; i < bullets.length; i++){ //go through all existing bullets and update their positions
+  bullets[i].update();
+  bullets[i].draw();
   if(bullets[i].y > 800 || bullets[i].y < 0){
      bullets.splice(i, 1); //remove the bullet if it goes away
+  }
+  else{
+  	for(var j = 0; j < i ; j++){ //look at all previously shot bullets
+
+//  		console.log(bullets[i].getDist(bullets[j]));
+  		if(bullets[i].getDist(bullets[j]) < 10 || bullets[j].y > bullets[i].y ){ //if the previous bullet intersects with current bullet
+  			debugger;
+			for(var k = 0; k < 10 ; k++){//add radial bullets where the current bullet is
+				bullets2.push(new Bullet(bullets[i].x,bullets[i].y,4*cos(  k*(2*3.14/10)  ),4*sin(  k*(2*3.14/10)  ),0,.4));
+			}
+			bullets.splice(i, 1);//remove intersecting bullets
+			bullets.splice(j, 1);
+			break;
+  		}
+  	}
   }
 
 }
 
+for(var i = 0 ; i < bullets2.length; i++){ //exploded bullets need not collide sincethey start from same enter circle
+	bullets2[i].update();
+  	bullets2[i].draw();	
+	if(bullets2[i].y > 800 || bullets2[i].y < 0){
+     bullets2.splice(i, 1); //remove the bullet if it goes away
+  }
+}
 
  
 
