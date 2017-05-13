@@ -11,7 +11,7 @@ class Bullet{
   	return sqrt(pow(bullet2.x,2) + pow(bullet2.y,2));
   }
   update(){
-	this.x -= this.hspeed;
+	this.x += this.hspeed;
 	this.y += this.vspeed;
 	this.vspeed -= this.y_acc;
   }
@@ -53,18 +53,83 @@ class Player{
 
 }
 
-//================================================
-function setup() {
-createCanvas(800,600);
-var x = 0;
-var y = 0;
+class Enemy{
 
-for(i=0;i<30;i++){
-enemyArray[i] = new Enemy(i);
+  constructor(id){
+    this.id = id;
+    this.x= random(25,width-25);
+    this.y = random(0);
+    this.hit = false;
+    this.type= "enemy";
+    this.speed = .5;
+    this.radi = 100;
+    this.changingDir = false;
+    this.direction = -1;
+    this.color = 'white';
+    //this.color
+  }
+
+display(){//--------
+
+//y+=random(speed*direction);
+    //meteory+=random(speed*direction);
+  //this.y+=random(speed*direction);
+  fill(this.color);
+  ellipse(this.x, this.y, this.radi, this.radi);
+  this.color = 'white';
+  fill('white');
+  //spacing++;
+}//--------------------------------
+
+move(){
+  //this.x = this.x + random(-1,1);
+  var changingDir = this.changingDir;
+
+  if(this.y>height-this.radi||this.y<0){
+    
+    if(!this.changingDir){ //if its out of bounds and not changing direction
+      this.direction = -this.direction; //change the direction
+      this.changingDir = true; //set changing dir to true, so it doesn't change direction until it finishes the current change
+    }
+    this.y = this.y+ (5*this.direction);
+  }
+  else{
+    this.y = this.y+5*this.direction;
+    this.changingDir = false;
+  }
+}//------------------------------
+clear(){
+  this.x=0;
+  this.y=0;
+  speed=2;
+  radi=0;
+
+}
+getDist(bullet2){
+    return sqrt(pow(bullet2.x - bullet2.hspeed - this.x,2) + pow(bullet2.y + bullet2.vspeed - this.y,2));
+  }
+
+  isHit(bullet){
+    //console.log(this.getDist(bullet) + " <= " + this.radi);
+    if(this.getDist(bullet) <= this.radi/2){
+      this.color = "red";
+      return true;
+    }
+    return false;
+  }
+
+
 }
 
-}//----------------------------------------------
+function removeFromArray(arr, i){
+  var last = arr.length - 1;
+  var temp = arr[i];
+  arr[i] = arr[last];
+  arr[last] = temp;
+  arr.splice(last,1);
 
+
+}
 var direction = 1;
 var spacing=0;
 var h=400;
@@ -81,26 +146,24 @@ var movingDown = false;
 
 var bullets = [];
 var bullets2 = [];
-var enemyArray=[];
+var enemies=[];
 var i=0;
 var counter = 0;
 
 var speed = 4;
 var player1 = new Player(400,400);
 
+//================================================
+function setup() {
+createCanvas(800,600);
+var x = 0;
+var y = 0;
 
-/*
-function drawEnemy() {
+for(i=0;i<4;i++){
+enemies[i] = new Enemy(i);
+}
 
-  for(i=counter;i<5;i++){
-      enemyArray[i].display();
-
-    }
-    //spacing=0;
-  //  counter+=5;
-}*/
-
-
+}//----------------------------------------------
 
 
 //---------------------------------------------------
@@ -110,16 +173,15 @@ background(204);
 
 player1.draw();
 
-for(i=0;i<10;i++){
-    enemyArray[i].display();
-    enemyArray[i].move();
+for(i=0;i<4;i++){
+    enemies[i].display();
+    enemies[i].move();
   }
 
   //var m = setInterval(drawEnemy, 2000);
   //y = y+5;
   if(shotFired){
   	var y_acc= random();
-  	console.log(y_acc);
     bullets.push(new Bullet(player1.h,player1.v,0,-8,0,5*y_acc));
     shotFired = false;
   }
@@ -136,25 +198,38 @@ for(i=0;i<10;i++){
     player1.v+=speed;
   }
 
-
+var c = false;
 for(var i = 0 ; i < bullets.length; i++){ //go through all existing bullets and update their positions
   bullets[i].update();
   bullets[i].draw();
+  for(var j = 0; j < 4 ; j++){
+    if( enemies[j].isHit(bullets[i])){
+      removeFromArray(bullets,i);
+      c = true;
+      break;
+    }
+  }
+  if(c){
+    c = false;
+    continue;
+  }
+ 
+
   if(bullets[i].y > 800 || bullets[i].y < 0){
-     bullets.splice(i, 1); //remove the bullet if it goes away
+     removeFromArray(bullets,i); //remove the bullet if it's out of screen bounds
   }
   else{
   	for(var j = 0; j < i ; j++){ //look at all previously shot bullets
 
 //  		console.log(bullets[i].getDist(bullets[j]));
   		if(bullets[i].getDist(bullets[j]) < 10 || bullets[j].y > bullets[i].y ){ //if the previous bullet intersects with current bullet
-  			debugger;
-			for(var k = 0; k < 10 ; k++){//add radial bullets where the current bullet is
-				bullets2.push(new Bullet(bullets[i].x,bullets[i].y,4*cos(  k*(2*3.14/10)  ),4*sin(  k*(2*3.14/10)  ),0,.4));
-			}
-			bullets.splice(i, 1);//remove intersecting bullets
-			bullets.splice(j, 1);
-			break;
+  			for(var k = 0; k < 10 ; k++){//add radial bullets where the current bullet is
+  				bullets2.push(new Bullet(bullets[i].x,bullets[i].y,4*cos(  k*(2*3.14/10)  ),4*sin(  k*(2*3.14/10)  ),0,.4));
+  			}
+
+  			removeFromArray(bullets,i);//remove intersecting bullets
+  			removeFromArray(bullets,j);
+  			break;
   		}
   	}
   }
@@ -176,53 +251,7 @@ for(var i = 0 ; i < bullets2.length; i++){ //exploded bullets need not collide s
 }//----------------------------------------------
 
 //
-function Enemy(id){
-  this.id = id;
-  this.x= random(25,width-25);
-  this.y = random(0);
-  this.hit = false;
-  this.type= "enemy";
-  this.speed = .5;
-  var radi = 100;
-  this.changingDir = false;
-  this.direction = -1;
 
-  this.display = function(){//--------
-
-//y+=random(speed*direction);
-    //meteory+=random(speed*direction);
-  //this.y+=random(speed*direction);
-
-  ellipse(this.x+radi, this.y, radi, radi);
-  //spacing++;
-}//--------------------------------
-this.move = function(){
-  //this.x = this.x + random(-1,1);
-  var changingDir = this.changingDir;
-
-  if(this.y>height-radi||this.y<0){
-    
-    if(!this.changingDir){ //if its out of bounds and not changing direction
-      this.direction = -this.direction; //change the direction
-      this.changingDir = true; //set changing dir to true, so it doesn't change direction until it finishes the current change
-    }
-    this.y = this.y+ (5*this.direction);
-  }
-  else{
-    this.y = this.y+5*this.direction;
-    this.changingDir = false;
-  }
-}//------------------------------
-this.clear=function(){
-  this.x=0;
-  this.y=0;
-  speed=2;
-  radi=0;
-
-}
-
-
-}//-------------------------------------------------
 
 function keyPressed(){
   if(keyCode==LEFT_ARROW){
